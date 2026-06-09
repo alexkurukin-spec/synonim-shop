@@ -2,6 +2,7 @@ import { MetadataRoute } from "next"
 import { listCategories } from "@lib/data/categories"
 import { listProducts } from "@lib/data/products"
 import { getSiteUrl } from "@lib/constants/seo"
+import { LEGAL_PAGES } from "@lib/constants/legal"
 
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "ru"
 
@@ -18,6 +19,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.8,
     },
+    ...LEGAL_PAGES.map((p) => ({
+      url: `${prefix}/info/${p.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.3,
+    })),
   ]
 
   let categoryEntries: MetadataRoute.Sitemap = []

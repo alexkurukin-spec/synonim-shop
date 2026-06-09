@@ -15,6 +15,16 @@ module.exports = defineConfig({
   },
   modules: [
     {
+      // Слой фискализации 54-ФЗ (Фаза 5). Облачная касса подключается позже;
+      // без ключей продажа остаётся в pending_fiscalization (без имитации).
+      resolve: "./src/modules/fiscalization",
+      options: {
+        provider: process.env.FISCAL_PROVIDER,
+        apiKey: process.env.FISCAL_API_KEY,
+        taxSystem: process.env.FISCAL_TAX_SYSTEM,
+      },
+    },
+    {
       // Payment-модуль с провайдером РФ-эквайринга ЮKassa (Фаза 4).
       // Системный провайдер (pp_system_default) Medusa добавляет автоматически.
       resolve: "@medusajs/medusa/payment",

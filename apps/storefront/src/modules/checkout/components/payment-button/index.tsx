@@ -11,13 +11,17 @@ import ErrorMessage from "../error-message"
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
   "data-testid": string
+  // Внешняя блокировка (напр. не дано согласие на обработку ПДн, 152-ФЗ).
+  disabled?: boolean
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
   "data-testid": dataTestId,
+  disabled = false,
 }) => {
   const notReady =
+    disabled ||
     !cart ||
     !cart.shipping_address ||
     !cart.billing_address ||
