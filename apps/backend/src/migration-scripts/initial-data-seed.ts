@@ -395,8 +395,8 @@ export default async function initial_data_seed({
           name: "Россия",
           currency_code: "rub",
           countries,
-          // Заглушка платёжного провайдера. Реальный РФ-эквайринг — Фаза 4.
-          payment_providers: ["pp_system_default"],
+          // РФ-эквайринг ЮKassa (Фаза 4) + системный провайдер как fallback.
+          payment_providers: ["pp_system_default", "pp_yookassa_yookassa"],
         },
       ],
     },

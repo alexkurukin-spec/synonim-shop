@@ -33,6 +33,10 @@ export const paymentInfoMap: Record<
     title: "Manual Payment",
     icon: <CreditCard />,
   },
+  pp_yookassa_yookassa: {
+    title: "Банковская карта · ЮKassa",
+    icon: <CreditCard />,
+  },
   // Add more payment providers here
 }
 
@@ -48,6 +52,10 @@ export const isPaypal = (providerId?: string) => {
 }
 export const isManual = (providerId?: string) => {
   return providerId?.startsWith("pp_system_default")
+}
+// ЮKassa — провайдер с редиректом на страницу оплаты (Фаза 4).
+export const isYooKassa = (providerId?: string) => {
+  return providerId?.startsWith("pp_yookassa")
 }
 
 // Add currencies that don't need to be divided by 100

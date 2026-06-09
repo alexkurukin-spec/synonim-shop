@@ -1,6 +1,6 @@
 "use client"
 
-import { isManual, isStripeLike } from "@lib/constants"
+import { isManual, isStripeLike, isYooKassa } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
@@ -38,6 +38,14 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     case isManual(paymentSession?.provider_id):
       return (
         <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} />
+      )
+    case isYooKassa(paymentSession?.provider_id):
+      return (
+        <YooKassaPaymentButton
+          notReady={notReady}
+          paymentSession={paymentSession}
+          data-testid={dataTestId}
+        />
       )
     default:
       return <Button disabled>Select a payment method</Button>
@@ -185,6 +193,62 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
       <ErrorMessage
         error={errorMessage}
         data-testid="manual-payment-error-message"
+      />
+    </>
+  )
+}
+
+const YooKassaPaymentButton = ({
+  notReady,
+  paymentSession,
+  "data-testid": dataTestId,
+}: {
+  notReady: boolean
+  paymentSession?: HttpTypes.StorePaymentSession
+  "data-testid"?: string
+}) => {
+  const [submitting, setSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  // confirmation_url приходит из initiatePayment провайдера ЮKassa
+  // (см. backend: data.confirmation.confirmation_url).
+  const confirmationUrl = (
+    paymentSession?.data as
+      | { confirmation?: { confirmation_url?: string } }
+      | undefined
+  )?.confirmation?.confirmation_url
+
+  const handlePayment = () => {
+    setSubmitting(true)
+    setErrorMessage(null)
+
+    if (!confirmationUrl) {
+      setErrorMessage(
+        "Не удалось получить ссылку на оплату ЮKassa. Обновите страницу и попробуйте снова."
+      )
+      setSubmitting(false)
+      return
+    }
+
+    // Редирект на страницу оплаты ЮKassa. После оплаты webhook авторизует
+    // платёж и завершает заказ; покупатель возвращается на return_url.
+    window.location.href = confirmationUrl
+  }
+
+  return (
+    <>
+      <Button
+        disabled={notReady || !confirmationUrl}
+        isLoading={submitting}
+        onClick={handlePayment}
+        size="large"
+        data-testid={dataTestId}
+      >
+        Оплатить через ЮKassa
+      </Button>
+      <ErrorMessage
+        error={errorMessage}
+        data-testid="yookassa-payment-error-message"
       />
     </>
   )

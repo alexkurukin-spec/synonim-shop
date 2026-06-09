@@ -12,5 +12,26 @@ module.exports = defineConfig({
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     }
-  }
+  },
+  modules: [
+    {
+      // Payment-модуль с провайдером РФ-эквайринга ЮKassa (Фаза 4).
+      // Системный провайдер (pp_system_default) Medusa добавляет автоматически.
+      resolve: "@medusajs/medusa/payment",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/yookassa",
+            id: "yookassa",
+            options: {
+              shopId: process.env.YOOKASSA_SHOP_ID,
+              secretKey: process.env.YOOKASSA_SECRET_KEY,
+              capture: process.env.YOOKASSA_CAPTURE === "true",
+              returnUrl: process.env.YOOKASSA_RETURN_URL,
+            },
+          },
+        ],
+      },
+    },
+  ],
 })
