@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 72" role="img" aria-label="СИНОНИМ">
+  <!-- PLACEHOLDER logo (black, for light backgrounds). Replace with final brand SVG. -->
+  <g fill="none" stroke="#1A1A1A" stroke-width="2">
+    <circle cx="36" cy="36" r="26" />
+    <circle cx="36" cy="36" r="14" />
+    <path d="M36 10 L36 22 M36 50 L36 62 M10 36 L22 36 M50 36 L62 36
+             M17.6 17.6 L27 27 M54.4 17.6 L45 27 M17.6 54.4 L27 45 M54.4 54.4 L45 45" />
+  </g>
+  <text x="74" y="48" font-family="'Playfair Display', Georgia, serif"
+        font-size="34" font-weight="700" letter-spacing="2" fill="#1A1A1A">СИНОНИМ</text>
+</svg>
