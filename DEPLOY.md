@@ -16,6 +16,21 @@
 
 ---
 
+## Деплой в один клик (blueprint-файлы)
+
+В репозитории лежат готовые конфиги, чтобы не настраивать backend руками:
+
+- **Render:** `render.yaml` (в корне) — создаёт PostgreSQL + backend-сервис из Dockerfile, генерирует `JWT_SECRET`/`COOKIE_SECRET`, подключает БД.
+  Применение: Render Dashboard → **New → Blueprint** → выбрать репозиторий. Дальше задать `*_CORS` в Dashboard (см. ниже).
+- **Railway:** `apps/backend/railway.json` — велит Railway собирать сервис по `Dockerfile` с healthcheck `/health`.
+  Применение: New Project → repo → Root Directory = `apps/backend` (railway.json подхватится автоматически), задать env-секреты.
+
+> Витрина (Next.js) в blueprint **не входит**: её `NEXT_PUBLIC_*` нужны на этапе сборки, а publishable-ключ появляется только после сида backend. Поэтому витрину импортируем в Vercel отдельно (раздел 3) — это тоже фактически один клик.
+
+Дальше — ручные шаги по сервисам (БД-строка, ключ, CORS, Vercel).
+
+---
+
 ## 0. Подготовка
 
 - Залей ветку в GitHub (уже сделано): `claude/kind-tesla-5k28y9`. Можно слить в `main`.

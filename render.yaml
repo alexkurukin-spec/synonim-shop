@@ -1,0 +1,65 @@
+# Render Blueprint — backend Medusa + PostgreSQL (Фаза 4/5).
+# Применение: Render Dashboard → New → Blueprint → выбрать этот репозиторий.
+# Render сам создаст БД и backend-сервис из этого файла.
+#
+# Витрина (Next.js) сюда НЕ включена намеренно: её клиентские env
+# (NEXT_PUBLIC_*, особенно publishable-ключ) нужны на этапе сборки, а ключ
+# появляется только после сидирования backend. Поэтому витрину деплоим
+# отдельно в Vercel (импорт репо, Root Directory = apps/storefront) — см. DEPLOY.md.
+#
+# После первого деплоя backend:
+#   1) забрать publishable-ключ (SQL из DEPLOY.md) и создать админа;
+#   2) задеплоить витрину в Vercel, получить её домен;
+#   3) вписать домен Vercel в STORE_CORS и AUTH_CORS ниже (через Dashboard,
+#      т.к. они sync:false) и передеплоить backend.
+
+databases:
+  - name: synonim-db
+    databaseName: synonim
+    user: medusa
+    plan: free            # бесплатный план Render истекает через 90 дней
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: synonim-backend
+    runtime: docker
+    rootDir: apps/backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free            # для прод-нагрузки повысить до starter+
+    region: frankfurt
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Подключение к созданной выше БД — автоматически
+      - key: DATABASE_URL
+        fromDatabase:
+          name: synonim-db
+          property: connectionString
+      # Секреты генерирует Render
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SECRET
+        generateValue: true
+      # CORS — задать в Dashboard после получения домена витрины (Vercel)
+      - key: STORE_CORS
+        sync: false        # https://<твой-проект>.vercel.app
+      - key: AUTH_CORS
+        sync: false        # https://<vercel>,https://<этот backend>.onrender.com
+      - key: ADMIN_CORS
+        sync: false        # https://<этот backend>.onrender.com
+      # ЮKassa — опционально, для оплаты (боевые ключи у владельца)
+      - key: YOOKASSA_SHOP_ID
+        sync: false
+      - key: YOOKASSA_SECRET_KEY
+        sync: false
+      - key: YOOKASSA_CAPTURE
+        value: "false"
+      - key: YOOKASSA_RETURN_URL
+        sync: false        # https://<vercel>/ru/order/confirmed
+      # Фискализация 54-ФЗ — опционально (провайдер кассы у владельца)
+      - key: FISCAL_PROVIDER
+        sync: false
+      - key: FISCAL_API_KEY
+        sync: false
