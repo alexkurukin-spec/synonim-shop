@@ -1,10 +1,54 @@
 import { getBaseURL } from "@lib/util/env"
 import { inter, playfair } from "@lib/fonts"
-import { Metadata } from "next"
+import { Metadata, Viewport } from "next"
+import {
+  SITE_DESCRIPTION,
+  SITE_HREFLANG,
+  SITE_LOCALE,
+  SITE_NAME,
+  SITE_TAGLINE,
+} from "@lib/constants/seo"
+import {
+  organizationJsonLd,
+  websiteJsonLd,
+} from "@lib/util/structured-data"
+import JsonLd from "@modules/common/components/json-ld"
 import "styles/globals.css"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  title: {
+    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  alternates: {
+    languages: { [SITE_HREFLANG]: "/" },
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: SITE_LOCALE,
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+}
+
+// viewport БЕЗ maximum-scale=1 — требование доступности (Фаза 3).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#4A5335",
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
@@ -15,6 +59,8 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       className={`${playfair.variable} ${inter.variable}`}
     >
       <body className="font-body bg-bg text-ink antialiased">
+        <JsonLd data={organizationJsonLd()} />
+        <JsonLd data={websiteJsonLd()} />
         <main className="relative">{props.children}</main>
       </body>
     </html>

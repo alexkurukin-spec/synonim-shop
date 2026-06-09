@@ -4,6 +4,12 @@ import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
+import { SITE_NAME, getSiteUrl } from "@lib/constants/seo"
+import {
+  breadcrumbJsonLd,
+  productJsonLd,
+} from "@lib/util/structured-data"
+import JsonLd from "@modules/common/components/json-ld"
 
 type Props = {
   params: Promise<{ countryCode: string; handle: string }>
@@ -87,12 +93,25 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
+  const description =
+    product.description || `${product.title} — ${SITE_NAME}.`
+
   return {
-    title: `${product.title} | Medusa Store`,
-    description: `${product.title}`,
+    title: product.title,
+    description,
+    alternates: {
+      canonical: `/${params.countryCode}/products/${product.handle}`,
+    },
     openGraph: {
-      title: `${product.title} | Medusa Store`,
-      description: `${product.title}`,
+      type: "website",
+      title: `${product.title} | ${SITE_NAME}`,
+      description,
+      images: product.thumbnail ? [product.thumbnail] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.title} | ${SITE_NAME}`,
+      description,
       images: product.thumbnail ? [product.thumbnail] : [],
     },
   }
@@ -111,7 +130,11 @@ export default async function ProductPage(props: Props) {
 
   const pricedProduct = await listProducts({
     countryCode: params.countryCode,
-    queryParams: { handle: params.handle },
+    queryParams: {
+      handle: params.handle,
+      fields:
+        "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*categories",
+    } as HttpTypes.StoreProductListParams,
   }).then(({ response }) => response.products[0])
 
   const images = getImagesForVariant(pricedProduct, selectedVariantId)
@@ -120,12 +143,34 @@ export default async function ProductPage(props: Props) {
     notFound()
   }
 
+  const siteUrl = getSiteUrl()
+  const category = pricedProduct.categories?.[0]
+  const breadcrumb = breadcrumbJsonLd([
+    { name: "Главная", item: `${siteUrl}/${params.countryCode}` },
+    ...(category
+      ? [
+          {
+            name: category.name,
+            item: `${siteUrl}/${params.countryCode}/categories/${category.handle}`,
+          },
+        ]
+      : []),
+    {
+      name: pricedProduct.title,
+      item: `${siteUrl}/${params.countryCode}/products/${pricedProduct.handle}`,
+    },
+  ])
+
   return (
-    <ProductTemplate
-      product={pricedProduct}
-      region={region}
-      countryCode={params.countryCode}
-      images={images ?? []}
-    />
+    <>
+      <JsonLd data={productJsonLd(pricedProduct, params.countryCode)} />
+      <JsonLd data={breadcrumb} />
+      <ProductTemplate
+        product={pricedProduct}
+        region={region}
+        countryCode={params.countryCode}
+        images={images ?? []}
+      />
+    </>
   )
 }
