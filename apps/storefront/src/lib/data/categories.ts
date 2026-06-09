@@ -27,7 +27,18 @@ export const listCategories = async (query?: Record<string, unknown>) => {
 }
 
 export const getCategoryByHandle = async (categoryHandle: string[]) => {
-  const handle = `${categoryHandle.join("/")}`
+  // Route segments arrive percent-encoded for non-ASCII handles (e.g. Cyrillic
+  // "кольца"). Decode before querying so the backend matches the stored handle
+  // instead of receiving a double-encoded value.
+  const handle = categoryHandle
+    .map((segment) => {
+      try {
+        return decodeURIComponent(segment)
+      } catch {
+        return segment
+      }
+    })
+    .join("/")
 
   const next = {
     ...(await getCacheOptions("categories")),
