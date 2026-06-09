@@ -1,17 +1,14 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { LEGAL_PAGES, getLegalPage } from "@lib/constants/legal"
+import { getLegalPage } from "@lib/constants/legal"
 
 type Props = {
   params: Promise<{ slug: string; countryCode: string }>
 }
 
-export function generateStaticParams() {
-  // Только slug'и; countryCode подставляется вышестоящим сегментом на запросе.
-  // dynamicParams оставляем включённым, чтобы /{countryCode}/info/{slug}
-  // матчился для любого региона (иначе 404 из-за неполного набора params).
-  return LEGAL_PAGES.map((p) => ({ slug: p.slug }))
-}
+// Страницы рендерятся динамически: родительский layout (main) и так зависит
+// от cookie. generateStaticParams здесь не задаём намеренно — частичный набор
+// params (slug без countryCode) ломал статический пререндер в проде.
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const { slug, countryCode } = await props.params
