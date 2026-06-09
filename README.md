@@ -17,8 +17,36 @@ apps/
 
 ## Статус
 
-- **Фаза 0 — инициализация** ✅ (storefront + бренд-система; см. ниже)
+- **Фаза 0 — инициализация** ✅ (storefront + бренд-система)
 - **Фаза 1 — backend и каталог** ✅ (регион RUB, модель вариантов, кастомные поля, seed на 13 SKU)
+- **Фаза 2 — витрина** ✅ (листинг категорий с кириллическими handle, карточка товара, корзина/чекаут UI)
+- **Фаза 3 — SEO** ✅ (JSON-LD Product/Offer/Breadcrumb/Organization/WebSite, canonical+noindex для фильтров, `sitemap.xml`, `robots.txt`, OpenGraph/Twitter, hreflang `ru-RU`, viewport без `maximum-scale`)
+- **Фаза 4 — эквайринг** ✅ (payment provider module **ЮKassa**: initiate/authorize/capture/refund/webhook; чекаут с редиректом. Боевые ключи — за владельцем)
+- **Фаза 5 — комплаенс** ✅ (54-ФЗ `FiscalizationService` без имитации успеха; 152-ФЗ: cookie-баннер, согласие в чекауте, политика ПДн; юр-страницы `/info/*`)
+
+> Подробности по каждой фазе — в истории коммитов и брифе. Данные «за владельцем» (реквизиты, провайдер кассы, боевые ключи) помечены `TODO` в коде.
+
+---
+
+## Быстрый старт (одна команда)
+
+Требуется **Node ≥ 20** и **PostgreSQL** (запущенный локально).
+
+```bash
+# создаёт БД, ставит зависимости, прогоняет миграции+сид,
+# автоматически прописывает publishable-ключ в storefront/.env.local
+./scripts/dev-setup.sh
+
+# затем поднять backend (:9000) и storefront (:8000)
+npm run dev
+```
+
+- По умолчанию используется `DATABASE_URL=postgres://postgres:postgres@localhost:5432/synonim`.
+  Свой задаётся так: `DATABASE_URL=postgres://user:pass@host:5432/synonim ./scripts/dev-setup.sh`
+- Открыть: **витрина** http://localhost:8000/ru · **admin** http://localhost:9000/app
+- Админ-пользователь (для входа в admin): `cd apps/backend && npx medusa user -e admin@synonim.ru -p <пароль>`
+
+Ручные шаги (если нужно по отдельности) — ниже.
 
 ---
 
@@ -97,10 +125,10 @@ npm run storefront:dev     # http://localhost:8000  (витрина бренда
 
 ---
 
-## TODO (за владельцем / следующие фазы)
-- **Налоговая ставка** — подтвердить значение НДС (сейчас заглушка 0%, см. seed).
+## TODO (за владельцем)
+- **Реквизиты юрлица** (ИНН/ОГРН/адрес) — для юр-страниц `/info/*` и Organization JSON-LD (см. `apps/storefront/src/lib/constants/legal.ts`, `lib/constants/seo.ts`).
+- **Боевые ключи ЮKassa** — `YOOKASSA_SHOP_ID` / `YOOKASSA_SECRET_KEY` (см. `apps/backend/.env.template`); для sandbox-теста — магазин ЮKassa в режиме «Тест».
+- **Провайдер облачной кассы** (54-ФЗ): АТОЛ/Бизнес.Ру/Модулькасса/ЕКАМ → `FISCAL_PROVIDER`/`FISCAL_API_KEY`; реализовать вызовы в `apps/backend/src/modules/fiscalization/service.ts` (сейчас без интеграции заказ остаётся `pending_fiscalization`, без имитации).
+- **Налоговая ставка** — подтвердить НДС (сейчас заглушка 0%, см. seed).
+- **Контакты/шоурум, соцсети** — телефон, адрес, `sameAs` (TODO в `legal.ts` / `seo.ts`).
 - Финальные SVG-логотипы (заменить заглушки в `public/logo/`), 200 SKU, фото изделий.
-- **Фаза 2** — storefront: листинг с фильтрами (каратность/огранка/размер/цена/металл через URL), карточка товара с выбором варианта и пересчётом цены, корзина/чекаут UI.
-- **Фаза 3** — SEO: JSON-LD (Product/Offer/Breadcrumb/Organization), канониклы фильтров, sitemap/robots.
-- **Фаза 4** — эквайринг (ЮKassa/Т-Касса), payment provider module.
-- **Фаза 5** — комплаенс: `FiscalizationService` + ГИИС ДМДК (пер-айтемный УИН), 54-ФЗ, 152-ФЗ, юр-страницы.
