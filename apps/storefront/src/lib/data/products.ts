@@ -134,3 +134,33 @@ export const listProductsWithSort = async ({
     queryParams,
   }
 }
+
+/**
+ * Загружает все товары категории/коллекции (до 100) с опциями и metadata —
+ * для построения фасетов и in-memory фильтрации каталога (Фаза 2/3).
+ * Запрос кэшируется (force-cache), поэтому повторные вызовы дешёвые.
+ */
+export const listCatalogProducts = async ({
+  categoryId,
+  collectionId,
+  countryCode,
+}: {
+  categoryId?: string
+  collectionId?: string
+  countryCode: string
+}): Promise<HttpTypes.StoreProduct[]> => {
+  const queryParams: HttpTypes.FindParams & HttpTypes.StoreProductListParams = {
+    limit: 100,
+    fields:
+      "handle,title,thumbnail,*variants.calculated_price,+variants.inventory_quantity,*options,+metadata",
+  }
+  if (categoryId) {
+    queryParams.category_id = [categoryId]
+  }
+  if (collectionId) {
+    queryParams.collection_id = [collectionId]
+  }
+
+  const { response } = await listProducts({ countryCode, queryParams })
+  return response.products
+}

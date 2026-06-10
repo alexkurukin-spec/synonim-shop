@@ -1,29 +1,41 @@
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
+import { listCatalogProducts } from "@lib/data/products"
+import { ActiveFilters, extractFacets } from "@lib/util/facets"
 import InteractiveLink from "@modules/common/components/interactive-link"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import RefinementList from "@modules/store/components/refinement-list"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
+import RecommendedFilters from "@modules/store/components/recommended-filters"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
 
-export default function CategoryTemplate({
+export default async function CategoryTemplate({
   category,
   sortBy,
   page,
   countryCode,
+  filters,
 }: {
   category: HttpTypes.StoreProductCategory
   sortBy?: SortOptions
   page?: string
   countryCode: string
+  filters?: ActiveFilters
 }) {
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
 
   if (!category || !countryCode) notFound()
+
+  // Все товары категории — для фасетов сайдбара и подборок (запрос кэшируется).
+  const catalogProducts = await listCatalogProducts({
+    categoryId: category.id,
+    countryCode,
+  })
+  const facets = extractFacets(catalogProducts)
 
   const parents = [] as HttpTypes.StoreProductCategory[]
 
@@ -41,7 +53,11 @@ export default function CategoryTemplate({
       className="flex flex-col small:flex-row small:items-start py-6 content-container"
       data-testid="category-container"
     >
-      <RefinementList sortBy={sort} data-testid="sort-by-container" />
+      <RefinementList
+        sortBy={sort}
+        facets={facets}
+        data-testid="sort-by-container"
+      />
       <div className="w-full">
         <div className="flex flex-row mb-8 text-2xl-semi gap-4">
           {parents &&
@@ -89,8 +105,15 @@ export default function CategoryTemplate({
             page={pageNumber}
             categoryId={category.id}
             countryCode={countryCode}
+            filters={filters}
           />
         </Suspense>
+
+        <RecommendedFilters
+          basePath={`/categories/${category.handle}`}
+          categoryName={category.name}
+          facets={facets}
+        />
       </div>
     </div>
   )

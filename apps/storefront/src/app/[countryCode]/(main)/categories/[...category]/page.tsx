@@ -8,6 +8,7 @@ import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { getSiteUrl } from "@lib/constants/seo"
 import { breadcrumbJsonLd } from "@lib/util/structured-data"
+import { activeFilterCount, parseFilters } from "@lib/util/facets"
 import JsonLd from "@modules/common/components/json-ld"
 
 const decodeHandle = (segments: string[]) =>
@@ -26,6 +27,10 @@ type Props = {
   searchParams: Promise<{
     sortBy?: SortOptions
     page?: string
+    carat?: string
+    cut?: string
+    size?: string
+    metal?: string
   }>
 }
 
@@ -66,11 +71,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       productCategory.description ||
       `${productCategory.name} с выращенными бриллиантами. Каталог СИНОНИМ — доставка по России.`
 
-    // Фильтр/пагинация (sortBy, page>1) канониклятся на базовую категорию и
-    // помечаются noindex, чтобы не плодить дубли в индексе (Фаза 3).
+    // SEO (Фаза 3): все фильтр-страницы канониклятся на базовую категорию.
+    // Одиночный фасет — индексируется (длинный хвост); многопараметрические
+    // комбинации (≥2 параметров) и пагинация — noindex, без индекс-мусора.
     const handle = decodeHandle(params.category)
+    const paramCount =
+      activeFilterCount(parseFilters(searchParams)) +
+      (searchParams.sortBy ? 1 : 0)
     const isFiltered =
-      Boolean(searchParams.sortBy) ||
+      paramCount >= 2 ||
       (searchParams.page ? parseInt(searchParams.page) > 1 : false)
 
     return {
@@ -92,6 +101,7 @@ export default async function CategoryPage(props: Props) {
   const searchParams = await props.searchParams
   const params = await props.params
   const { sortBy, page } = searchParams
+  const filters = parseFilters(searchParams)
 
   const productCategory = await getCategoryByHandle(params.category)
 
@@ -117,6 +127,7 @@ export default async function CategoryPage(props: Props) {
         sortBy={sortBy}
         page={page}
         countryCode={params.countryCode}
+        filters={filters}
       />
     </>
   )
