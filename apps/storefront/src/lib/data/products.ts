@@ -152,7 +152,7 @@ export const listCatalogProducts = async ({
   const queryParams: HttpTypes.FindParams & HttpTypes.StoreProductListParams = {
     limit: 100,
     fields:
-      "handle,title,thumbnail,*variants.calculated_price,+variants.inventory_quantity,*options,+metadata",
+      "handle,title,thumbnail,*variants.calculated_price,+variants.inventory_quantity,*options,*options.values,+metadata",
   }
   if (categoryId) {
     queryParams.category_id = [categoryId]
