@@ -179,7 +179,7 @@ const Shipping: React.FC<ShippingProps> = ({
                 className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
                 data-testid="edit-delivery-button"
               >
-                Edit
+                Изменить
               </button>
             </Text>
           )}
@@ -189,10 +189,10 @@ const Shipping: React.FC<ShippingProps> = ({
           <div className="grid">
             <div className="flex flex-col">
               <span className="font-medium txt-medium text-ui-fg-base">
-                Shipping method
+                Способ доставки
               </span>
               <span className="mb-4 text-ui-fg-muted txt-medium">
-                How would you like you order delivered
+                Как доставить заказ
               </span>
             </div>
             <div data-testid="delivery-options-container">
@@ -226,7 +226,7 @@ const Shipping: React.FC<ShippingProps> = ({
                           checked={showPickupOptions === PICKUP_OPTION_ON}
                         />
                         <span className="text-base-regular">
-                          Pick up your order
+                          Самовывоз заказа
                         </span>
                       </div>
                       <span className="justify-self-end text-ui-fg-base">
@@ -302,10 +302,10 @@ const Shipping: React.FC<ShippingProps> = ({
             <div className="grid">
               <div className="flex flex-col">
                 <span className="font-medium txt-medium text-ui-fg-base">
-                  Store
+                  Самовывоз
                 </span>
                 <span className="mb-4 text-ui-fg-muted txt-medium">
-                  Choose a store near you
+                  Выберите ближайший пункт выдачи
                 </span>
               </div>
               <div data-testid="delivery-options-container">
@@ -379,7 +379,7 @@ const Shipping: React.FC<ShippingProps> = ({
               disabled={!cart.shipping_methods?.[0]}
               data-testid="submit-delivery-option-button"
             >
-              Continue to payment
+              Перейти к оплате
             </Button>
           </div>
         </>

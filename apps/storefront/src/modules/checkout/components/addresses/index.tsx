@@ -46,7 +46,7 @@ const Addresses = ({
           level="h2"
           className="flex flex-row text-3xl-regular gap-x-2 items-baseline"
         >
-          Shipping Address
+          Адрес доставки
           {!isOpen && <CheckCircleSolid />}
         </Heading>
         {!isOpen && cart?.shipping_address && (
@@ -56,7 +56,7 @@ const Addresses = ({
               className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
               data-testid="edit-address-button"
             >
-              Edit
+              Изменить
             </button>
           </Text>
         )}
@@ -77,14 +77,14 @@ const Addresses = ({
                   level="h2"
                   className="text-3xl-regular gap-x-4 pb-6 pt-8"
                 >
-                  Billing address
+                  Платёжный адрес
                 </Heading>
 
                 <BillingAddress cart={cart} />
               </div>
             )}
             <SubmitButton className="mt-6" data-testid="submit-address-button">
-              Continue to delivery
+              Перейти к доставке
             </SubmitButton>
             <ErrorMessage error={message} data-testid="address-error-message" />
           </div>
@@ -100,7 +100,7 @@ const Addresses = ({
                     data-testid="shipping-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Shipping Address
+                      Адрес доставки
                     </Text>
                     <Text className="txt-medium text-ui-fg-subtle">
                       {cart.shipping_address.first_name}{" "}
@@ -124,7 +124,7 @@ const Addresses = ({
                     data-testid="shipping-contact-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Contact
+                      Контакты
                     </Text>
                     <Text className="txt-medium text-ui-fg-subtle">
                       {cart.shipping_address.phone}
@@ -139,12 +139,12 @@ const Addresses = ({
                     data-testid="billing-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Billing Address
+                      Платёжный адрес
                     </Text>
 
                     {sameAsBilling ? (
                       <Text className="txt-medium text-ui-fg-subtle">
-                        Billing and delivery address are the same.
+                        Платёжный адрес совпадает с адресом доставки.
                       </Text>
                     ) : (
                       <>
