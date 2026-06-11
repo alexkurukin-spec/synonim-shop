@@ -8,12 +8,9 @@ import {
   View,
 } from "react-native"
 import { useRouter } from "expo-router"
-import * as WebBrowser from "expo-web-browser"
 import { useCart } from "@/lib/cart"
 import { formatPrice } from "@/lib/format"
 import { colors, radius, spacing } from "@/lib/theme"
-
-const STOREFRONT_URL = process.env.EXPO_PUBLIC_STOREFRONT_URL
 
 export default function CartScreen() {
   const { cart, loading, setQty, remove } = useCart()
@@ -41,13 +38,6 @@ export default function CartScreen() {
         </Pressable>
       </View>
     )
-  }
-
-  // Stage 3 (по плану): нативный чекаут. Пока — переход на сайт, если задан URL.
-  const onCheckout = async () => {
-    if (STOREFRONT_URL) {
-      await WebBrowser.openBrowserAsync(`${STOREFRONT_URL}/ru/cart`)
-    }
   }
 
   return (
@@ -104,17 +94,12 @@ export default function CartScreen() {
             {formatPrice(cart?.total ?? cart?.subtotal)}
           </Text>
         </View>
-        <Pressable style={styles.checkout} onPress={onCheckout}>
-          <Text style={styles.checkoutText}>
-            {STOREFRONT_URL ? "Оформить заказ" : "Оформление — скоро"}
-          </Text>
+        <Pressable
+          style={styles.checkout}
+          onPress={() => router.push("/checkout")}
+        >
+          <Text style={styles.checkoutText}>Оформить заказ</Text>
         </Pressable>
-        {!STOREFRONT_URL && (
-          <Text style={styles.hint}>
-            Нативное оформление — следующий этап. Задайте
-            EXPO_PUBLIC_STOREFRONT_URL для перехода на сайт.
-          </Text>
-        )}
       </View>
     </View>
   )
@@ -182,5 +167,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   checkoutText: { color: colors.onDark, fontSize: 16, fontWeight: "600" },
-  hint: { color: colors.inkSubtle, fontSize: 12, textAlign: "center" },
 })

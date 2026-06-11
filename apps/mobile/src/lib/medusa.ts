@@ -218,4 +218,123 @@ export async function removeLineItem(
   })
 }
 
+// ── Чекаут ───────────────────────────────────────────────────────────────────
+export type Address = {
+  first_name: string
+  last_name: string
+  address_1: string
+  city: string
+  postal_code: string
+  country_code: string
+  phone?: string
+}
+
+export type ShippingOption = {
+  id: string
+  name: string
+  amount?: number
+  price_type?: string
+}
+
+export type PaymentProvider = { id: string; is_enabled?: boolean }
+
+export type PaymentSession = {
+  id: string
+  provider_id: string
+  data?: Record<string, any>
+  status?: string
+}
+
+/** Адрес + email на корзину (POST /store/carts/:id). */
+export async function setCartAddresses(
+  cartId: string,
+  email: string,
+  address: Address
+): Promise<Cart> {
+  const { cart } = await api<{ cart: Cart }>(`/store/carts/${cartId}`, {
+    method: "POST",
+    body: JSON.stringify({
+      email,
+      shipping_address: address,
+      billing_address: address,
+    }),
+  })
+  return cart
+}
+
+export async function listShippingOptions(
+  cartId: string
+): Promise<ShippingOption[]> {
+  const { shipping_options } = await api<{ shipping_options: ShippingOption[] }>(
+    "/store/shipping-options",
+    { query: { cart_id: cartId } }
+  )
+  return shipping_options
+}
+
+export async function addShippingMethod(
+  cartId: string,
+  optionId: string
+): Promise<Cart> {
+  const { cart } = await api<{ cart: Cart }>(
+    `/store/carts/${cartId}/shipping-methods`,
+    { method: "POST", body: JSON.stringify({ option_id: optionId }) }
+  )
+  return cart
+}
+
+export async function listPaymentProviders(): Promise<PaymentProvider[]> {
+  const region_id = await getRegionId()
+  const { payment_providers } = await api<{
+    payment_providers: PaymentProvider[]
+  }>("/store/payment-providers", { query: { region_id } })
+  return payment_providers
+}
+
+/**
+ * Создаёт payment collection для корзины и инициирует платёжную сессию.
+ * Возвращает сессию (в т.ч. data.confirmation.confirmation_url для ЮKassa).
+ */
+export async function initiatePayment(
+  cartId: string,
+  providerId: string
+): Promise<PaymentSession | null> {
+  const { payment_collection } = await api<{
+    payment_collection: { id: string }
+  }>("/store/payment-collections", {
+    method: "POST",
+    body: JSON.stringify({ cart_id: cartId }),
+  })
+  const { payment_collection: pc } = await api<{
+    payment_collection: { payment_sessions?: PaymentSession[] }
+  }>(`/store/payment-collections/${payment_collection.id}/payment-sessions`, {
+    method: "POST",
+    body: JSON.stringify({ provider_id: providerId }),
+  })
+  return (
+    pc.payment_sessions?.find((s) => s.provider_id === providerId) ||
+    pc.payment_sessions?.[0] ||
+    null
+  )
+}
+
+export type CompleteResult =
+  | { type: "order"; order: { id: string; display_id?: number } }
+  | { type: "cart"; error?: string }
+
+export async function completeCart(cartId: string): Promise<CompleteResult> {
+  const res = await api<any>(`/store/carts/${cartId}/complete`, {
+    method: "POST",
+  })
+  if (res?.type === "order" && res.order) {
+    return { type: "order", order: res.order }
+  }
+  return { type: "cart", error: res?.error?.message || "Не удалось оформить заказ" }
+}
+
+/** confirmation_url из платёжной сессии ЮKassa (если есть). */
+export function confirmationUrl(session?: PaymentSession | null): string | null {
+  return session?.data?.confirmation?.confirmation_url ?? null
+}
+
 export { BACKEND_URL, DEFAULT_REGION }
