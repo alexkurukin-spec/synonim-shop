@@ -7,6 +7,12 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "backgroundColor": "#FBF8F1",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FBF8F1"
+    },
     "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
@@ -15,6 +21,7 @@
     "android": {
       "package": "ru.synonim.app",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#73A341"
       }
     },

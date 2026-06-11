@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   ActivityIndicator,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -16,29 +17,32 @@ export default function HomeScreen() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    let active = true
-    ;(async () => {
-      try {
-        const [{ products }, cats] = await Promise.all([
-          listProducts({ limit: 6 }),
-          listCategories(),
-        ])
-        if (!active) return
-        setProducts(products)
-        setCategories(cats)
-      } catch (e) {
-        if (active) setError((e as Error).message)
-      } finally {
-        if (active) setLoading(false)
-      }
-    })()
-    return () => {
-      active = false
+  const load = useCallback(async () => {
+    try {
+      const [{ products }, cats] = await Promise.all([
+        listProducts({ limit: 6 }),
+        listCategories(),
+      ])
+      setProducts(products)
+      setCategories(cats)
+      setError(null)
+    } catch (e) {
+      setError((e as Error).message)
     }
   }, [])
+
+  useEffect(() => {
+    load().finally(() => setLoading(false))
+  }, [load])
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true)
+    await load()
+    setRefreshing(false)
+  }, [load])
 
   if (loading) {
     return (
@@ -66,6 +70,13 @@ export default function HomeScreen() {
       numColumns={2}
       columnWrapperStyle={{ gap: spacing.md }}
       contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.brand}
+        />
+      }
       ListHeaderComponent={
         <View>
           <View style={styles.hero}>

@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   ActivityIndicator,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -16,6 +17,7 @@ export default function CatalogScreen() {
   const navigation = useNavigation()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -24,26 +26,29 @@ export default function CatalogScreen() {
     }
   }, [params.name, navigation])
 
-  useEffect(() => {
-    let active = true
-    setLoading(true)
-    ;(async () => {
-      try {
-        const { products } = await listProducts({
-          categoryId: params.categoryId,
-          limit: 100,
-        })
-        if (active) setProducts(products)
-      } catch (e) {
-        if (active) setError((e as Error).message)
-      } finally {
-        if (active) setLoading(false)
-      }
-    })()
-    return () => {
-      active = false
+  const load = useCallback(async () => {
+    try {
+      const { products } = await listProducts({
+        categoryId: params.categoryId,
+        limit: 100,
+      })
+      setProducts(products)
+      setError(null)
+    } catch (e) {
+      setError((e as Error).message)
     }
   }, [params.categoryId])
+
+  useEffect(() => {
+    setLoading(true)
+    load().finally(() => setLoading(false))
+  }, [load])
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true)
+    await load()
+    setRefreshing(false)
+  }, [load])
 
   if (loading) {
     return (
@@ -68,6 +73,13 @@ export default function CatalogScreen() {
       numColumns={2}
       columnWrapperStyle={{ gap: spacing.md }}
       contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.brand}
+        />
+      }
       ListEmptyComponent={
         <Text style={styles.empty}>Товары не найдены.</Text>
       }

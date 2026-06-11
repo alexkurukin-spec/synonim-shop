@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   ActivityIndicator,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -39,24 +40,28 @@ export default function OrdersScreen() {
   const { customer } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    let active = true
-    ;(async () => {
-      try {
-        const list = await listOrders()
-        if (active) setOrders(list)
-      } catch (e) {
-        if (active) setError((e as Error).message)
-      } finally {
-        if (active) setLoading(false)
-      }
-    })()
-    return () => {
-      active = false
+  const load = useCallback(async () => {
+    try {
+      const list = await listOrders()
+      setOrders(list)
+      setError(null)
+    } catch (e) {
+      setError((e as Error).message)
     }
   }, [])
+
+  useEffect(() => {
+    load().finally(() => setLoading(false))
+  }, [load])
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true)
+    await load()
+    setRefreshing(false)
+  }, [load])
 
   if (!customer) {
     return (
@@ -87,6 +92,13 @@ export default function OrdersScreen() {
       data={orders}
       keyExtractor={(o) => o.id}
       contentContainerStyle={styles.list}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.brand}
+        />
+      }
       ListEmptyComponent={<Text style={styles.muted}>Заказов пока нет.</Text>}
       renderItem={({ item }) => (
         <View style={styles.card}>
