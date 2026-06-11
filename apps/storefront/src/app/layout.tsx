@@ -13,6 +13,7 @@ import {
   websiteJsonLd,
 } from "@lib/util/structured-data"
 import JsonLd from "@modules/common/components/json-ld"
+import PwaRegister from "@modules/common/components/pwa-register"
 import "styles/globals.css"
 
 export const metadata: Metadata = {
@@ -42,6 +43,15 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  // PWA: иконка для iOS и режим «как приложение» при добавлении на экран Домой.
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: "default",
+  },
 }
 
 // viewport БЕЗ maximum-scale=1 — требование доступности (Фаза 3).
@@ -61,6 +71,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       <body className="font-body bg-bg text-ink antialiased">
         <JsonLd data={organizationJsonLd()} />
         <JsonLd data={websiteJsonLd()} />
+        <PwaRegister />
         <main className="relative">{props.children}</main>
       </body>
     </html>

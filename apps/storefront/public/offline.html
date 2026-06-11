@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Нет соединения · СИНОНИМ</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #FBF8F1; color: #1A1A1A; font-family: Georgia, 'Times New Roman', serif;
+      text-align: center; padding: 24px;
+    }
+    .wrap { max-width: 420px; }
+    svg { margin-bottom: 24px; }
+    h1 { color: #4A5335; letter-spacing: 4px; font-size: 28px; margin: 0 0 12px; }
+    p { font-family: system-ui, -apple-system, sans-serif; color: #6B6B6B; font-size: 15px; line-height: 1.5; margin: 0 0 24px; }
+    button {
+      background: #4A5335; color: #fff; border: 0; border-radius: 8px;
+      padding: 12px 28px; font-size: 15px; cursor: pointer;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <svg width="96" height="96" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#73A341" stroke-width="40" stroke-linecap="round">
+        <circle cx="512" cy="512" r="330"/>
+        <circle cx="512" cy="512" r="178"/>
+        <path d="M512 182 L512 334 M512 690 L512 842 M182 512 L334 512 M690 512 L842 512
+                 M278.7 278.7 L398 398 M745.3 278.7 L626 398 M278.7 745.3 L398 626 M745.3 745.3 L626 626"/>
+      </g>
+    </svg>
+    <h1>СИНОНИМ</h1>
+    <p>Нет соединения с интернетом. Проверьте сеть и попробуйте снова — каталог и корзина никуда не денутся.</p>
+    <button onclick="location.reload()">Обновить</button>
+  </div>
+</body>
+</html>
