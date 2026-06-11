@@ -17,10 +17,18 @@
   завершает заказ; для системного/тестового провайдера — сразу.
 - **Личный кабинет (этап 4):** вход/регистрация (Medusa Auth), профиль,
   список заказов, избранное (локальное, ♡ на карточке товара).
+- **Бренд-ассеты (этап 5):** иконка / adaptive-icon / сплэш из мотива «О»
+  (заглушки в духе брендбука — финальные файлы заменит владелец в
+  `assets/`, имена не менять). Pull-to-refresh на списках.
+- **Конфиг сборки (этап 6):** `eas.json` с профилями
+  development / preview (APK) / production.
 - Бренд-тема, русский язык, рубли.
 
-## Что дальше (этапы 5–6)
-- Push-уведомления, иконка/сплэш из бренда, сборка и публикация (EAS).
+## Что осталось
+- Push-уведомления: нужны EAS projectId (аккаунт Expo владельца),
+  `expo-notifications` и серверная отправка — после `eas init`.
+- Публикация в сторы: аккаунты владельца (Apple $99/год, Google $25),
+  скриншоты и тексты для витрин магазинов.
 
 > Чекаут использует те же эндпоинты Medusa v2 Store API, что и витрина
 > (адрес, shipping-options, payment-collections, complete). Реальная оплата
@@ -63,18 +71,31 @@ EXPO_PUBLIC_STOREFRONT_URL=...       # (опц.) URL витрины для че�
 
 ---
 
-## Сборка и публикация (когда дойдём до этапа 6)
+## Сборка и публикация (EAS)
 
-Сборка через **EAS** (облако Expo — Mac не нужен):
+Профили сборки уже описаны в `eas.json`. Сборка идёт в облаке Expo —
+**Mac не нужен** даже для iOS.
+
 ```bash
 npm i -g eas-cli
-eas login
-eas build -p android --profile preview   # APK для теста
-eas build -p ios --profile preview        # нужен Apple Developer
-eas submit                                # отправка в стор
+eas login                    # аккаунт Expo (бесплатный)
+cd apps/mobile
+eas init                     # привяжет projectId к app.json (один раз)
+
+# Переменные окружения для сборки (EXPO_PUBLIC_* должны быть заданы):
+eas env:create --name EXPO_PUBLIC_MEDUSA_BACKEND_URL --value https://<backend>
+eas env:create --name EXPO_PUBLIC_MEDUSA_PUBLISHABLE_KEY --value pk_...
+eas env:create --name EXPO_PUBLIC_DEFAULT_REGION --value ru
+
+eas build -p android --profile preview   # APK для теста (ссылка на скачивание)
+eas build -p ios --profile preview       # нужен Apple Developer аккаунт
+eas submit -p android                    # отправка в Google Play
+eas submit -p ios                        # отправка в App Store
 ```
+
 Аккаунты разработчика — на владельце: Apple Developer ($99/год),
-Google Play ($25 разово). Иконку/сплэш и тексты сторов добавим отдельно.
+Google Play ($25 разово). `bundleIdentifier`/`package` уже заданы:
+`ru.synonim.app` (поменяйте при необходимости до первой публикации).
 
 ## Структура
 ```
