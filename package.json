@@ -27,7 +27,8 @@
   },
   "workspaces": [
     "apps/**",
-    "!apps/backend/.medusa/**"
+    "!apps/backend/.medusa/**",
+    "!apps/mobile/**"
   ],
   "overrides": {
     "ajv": "^8.0.0"

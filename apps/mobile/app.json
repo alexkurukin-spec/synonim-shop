@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "СИНОНИМ",
+    "slug": "synonim",
+    "scheme": "synonim",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FBF8F1",
+    "newArchEnabled": false,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ru.synonim.app"
+    },
+    "android": {
+      "package": "ru.synonim.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#73A341"
+      }
+    },
+    "plugins": ["expo-router"]
+  }
+}
