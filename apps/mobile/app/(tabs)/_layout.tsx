@@ -66,6 +66,13 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="account"
+        options={{
+          title: "Кабинет",
+          tabBarIcon: ({ color }) => <TabIcon symbol="☺" color={color} />,
+        }}
+      />
     </Tabs>
   )
 }

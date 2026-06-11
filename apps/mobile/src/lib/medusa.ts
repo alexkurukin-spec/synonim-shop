@@ -9,6 +9,12 @@ const BACKEND_URL = (
 const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 const DEFAULT_REGION = process.env.EXPO_PUBLIC_DEFAULT_REGION || "ru"
 
+// Токен авторизации покупателя (JWT). Устанавливается из AuthProvider.
+let authToken: string | null = null
+export function setAuthToken(token: string | null) {
+  authToken = token
+}
+
 // ── Типы (только то, что используем) ─────────────────────────────────────────
 export type Money = { calculated_amount?: number; currency_code?: string }
 export type OptionValue = { value: string }
@@ -75,6 +81,7 @@ async function api<T>(
     headers: {
       "Content-Type": "application/json",
       "x-publishable-api-key": PUBLISHABLE_KEY,
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...(init?.headers || {}),
     },
   })
@@ -335,6 +342,104 @@ export async function completeCart(cartId: string): Promise<CompleteResult> {
 /** confirmation_url из платёжной сессии ЮKassa (если есть). */
 export function confirmationUrl(session?: PaymentSession | null): string | null {
   return session?.data?.confirmation?.confirmation_url ?? null
+}
+
+// ── Покупатель и заказы ──────────────────────────────────────────────────────
+export type Customer = {
+  id: string
+  email: string
+  first_name?: string | null
+  last_name?: string | null
+  phone?: string | null
+}
+
+export type Order = {
+  id: string
+  display_id?: number
+  status?: string
+  payment_status?: string
+  fulfillment_status?: string
+  total?: number
+  currency_code?: string
+  created_at?: string
+  email?: string
+  items?: { id: string; title: string; quantity: number; thumbnail?: string | null; product_title?: string }[]
+}
+
+/** Логин: получить JWT покупателя. */
+export async function loginCustomer(
+  email: string,
+  password: string
+): Promise<string> {
+  const res = await api<{ token: string }>("/auth/customer/emailpass", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  })
+  return res.token
+}
+
+/**
+ * Регистрация: создать учётку аутентификации, затем покупателя.
+ * Возвращает JWT (тем же токеном работают /store/customers/me и заказы).
+ */
+export async function registerCustomer(params: {
+  email: string
+  password: string
+  first_name?: string
+  last_name?: string
+}): Promise<string> {
+  const { token } = await api<{ token: string }>(
+    "/auth/customer/emailpass/register",
+    {
+      method: "POST",
+      body: JSON.stringify({ email: params.email, password: params.password }),
+    }
+  )
+  // Создаём покупателя под полученным токеном.
+  setAuthToken(token)
+  await api("/store/customers", {
+    method: "POST",
+    body: JSON.stringify({
+      email: params.email,
+      first_name: params.first_name,
+      last_name: params.last_name,
+    }),
+  })
+  return token
+}
+
+export async function getCurrentCustomer(): Promise<Customer | null> {
+  try {
+    const { customer } = await api<{ customer: Customer }>(
+      "/store/customers/me"
+    )
+    return customer
+  } catch {
+    return null
+  }
+}
+
+export async function updateCustomer(data: {
+  first_name?: string
+  last_name?: string
+  phone?: string
+}): Promise<Customer> {
+  const { customer } = await api<{ customer: Customer }>(
+    "/store/customers/me",
+    { method: "POST", body: JSON.stringify(data) }
+  )
+  return customer
+}
+
+export async function listOrders(): Promise<Order[]> {
+  const { orders } = await api<{ orders: Order[] }>("/store/orders", {
+    query: {
+      limit: 50,
+      fields:
+        "id,display_id,status,payment_status,fulfillment_status,total,currency_code,created_at,*items",
+    },
+  })
+  return orders
 }
 
 export { BACKEND_URL, DEFAULT_REGION }

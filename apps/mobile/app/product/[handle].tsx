@@ -18,11 +18,13 @@ import {
 } from "@/lib/medusa"
 import { formatPrice } from "@/lib/format"
 import { useCart } from "@/lib/cart"
+import { useFavorites } from "@/lib/favorites"
 import { colors, radius, spacing } from "@/lib/theme"
 
 export default function ProductScreen() {
   const { handle } = useLocalSearchParams<{ handle: string }>()
   const { add } = useCart()
+  const { isFavorite, toggle } = useFavorites()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Variant | null>(null)
@@ -97,7 +99,25 @@ export default function ProductScreen() {
           )}
         </View>
 
-        <Text style={styles.title}>{product.title}</Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { flex: 1 }]}>{product.title}</Text>
+          <Pressable
+            onPress={() => toggle(product)}
+            style={styles.heart}
+            hitSlop={8}
+          >
+            <Text
+              style={{
+                fontSize: 24,
+                color: isFavorite(product.handle)
+                  ? colors.accentDeep
+                  : colors.inkSubtle,
+              }}
+            >
+              {isFavorite(product.handle) ? "♥" : "♡"}
+            </Text>
+          </Pressable>
+        </View>
         {price != null && (
           <Text style={styles.price}>{formatPrice(price)}</Text>
         )}
@@ -167,6 +187,8 @@ const styles = StyleSheet.create({
   image: { width: "100%", height: "100%" },
   placeholder: { flex: 1, alignItems: "center", justifyContent: "center" },
   placeholderText: { color: colors.brand, letterSpacing: 2, fontWeight: "600" },
+  titleRow: { flexDirection: "row", alignItems: "flex-start", gap: spacing.sm },
+  heart: { paddingTop: 2 },
   title: { color: colors.brandDark, fontSize: 24, fontWeight: "700" },
   price: { color: colors.ink, fontSize: 20, marginTop: spacing.sm },
   desc: { color: colors.inkSubtle, fontSize: 14, lineHeight: 20, marginTop: spacing.md },
