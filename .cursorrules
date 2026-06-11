@@ -1,0 +1,19 @@
+# СИНОНИМ — правила проекта (см. также .cursor/rules/synonim.mdc и HANDOFF.md)
+
+Интернет-магазин ювелирки: Medusa v2 (apps/backend) + Next.js 15 App Router
+(apps/storefront), TypeScript strict, Tailwind v3, PostgreSQL. Регион Россия,
+валюта RUB. Витрина полностью на русском.
+
+Ключевые правила:
+- Вся витрина и новые UI-строки — на русском. Цены через convertToLocale (ru-RU).
+- Фискализация 54-ФЗ: НЕ имитировать успех. Без ключей кассы заказ остаётся
+  pending_fiscalization (apps/backend/src/modules/fiscalization).
+- Не выдумывать данные владельца (реквизиты, контакты, ставку НДС, ключи) —
+  оставлять TODO(owner) и заглушки.
+- SEO: фильтр-страницы канониклятся на базовую категорию; ≥2 параметров/пагинация
+  — noindex. JSON-LD (Product/Offer/Breadcrumb/Organization/WebSite) не ломать.
+- Перед коммитом: tsc --noEmit и next build без ошибок (оба приложения).
+- Не коммитить .env/.env.local, node_modules, .medusa, *.tsbuildinfo.
+- Запуск локально: ./scripts/dev-setup.sh, затем npm run dev. Туннель: ./scripts/share.sh.
+
+Полный контекст и список оставшихся задач — в HANDOFF.md.

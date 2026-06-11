@@ -1,0 +1,48 @@
+---
+description: Конвенции проекта СИНОНИМ (Medusa v2 + Next.js 15, RU ювелирный магазин)
+globs:
+alwaysApply: true
+---
+
+# Проект СИНОНИМ — правила для ассистента
+
+Интернет-магазин ювелирки (серебро + выращенные бриллианты). Подробности —
+в `HANDOFF.md`, `README.md`, бриф `sinonim-claude-code-brief.md`, бренд
+`synonim-brand-tokens (1).md`.
+
+## Стек и структура
+- Монорепо Turbo: `apps/backend` (Medusa v2.15.5), `apps/storefront` (Next.js 15
+  App Router, React 19, Tailwind v3, `@medusajs/ui-preset`). TypeScript strict.
+- Витрина — официальный Medusa Next.js starter, брендирован и переведён на русский.
+- БД — PostgreSQL. Регион — Россия, валюта **RUB**, страна `ru`.
+
+## Язык и формат
+- Вся витрина — **на русском**. Новые UI-строки добавлять по-русски.
+- Цены форматируются через `convertToLocale` (локаль `ru-RU` → «19 900,00 ₽»).
+- Кириллические handle категорий валидны — декодировать в data-слое при запросах.
+
+## Жёсткие правила (бриф)
+- **Фискализация (54-ФЗ): НЕ имитировать успех.** Если касса не настроена —
+  заказ остаётся `pending_fiscalization`, в лог пишется TODO. Не возвращать
+  «успешно» без реальной интеграции. См. `apps/backend/src/modules/fiscalization`.
+- **Не выдумывать данные владельца** (реквизиты юрлица, контакты, ставку НДС,
+  ключи). Оставлять `TODO(owner)` и заглушки. Это сознательная политика.
+- SEO: фильтр-страницы канониклятся на базовую категорию; ≥2 параметров или
+  пагинация — `noindex`. JSON-LD не ломать (Product/Offer/Breadcrumb/Org/WebSite).
+
+## Платежи и каталог
+- Payment provider ЮKassa — `apps/backend/src/modules/yookassa` (реализует
+  AbstractPaymentProvider Medusa v2). Webhook верифицируется повторным запросом.
+- Фасетные фильтры каталога — `apps/storefront/src/lib/util/facets.ts`
+  (источники: `product.options` + `metadata.stone.cut`, фильтрация in-memory).
+  Загрузка товаров для фасетов — `listCatalogProducts` (fields `*options,*options.values`).
+
+## Перед коммитом
+- `cd apps/storefront && npx tsc --noEmit` и `npm run build` — без ошибок.
+- `cd apps/backend && npx tsc --noEmit` — без ошибок.
+- Не коммитить `.env` / `.env.local` (секреты), `node_modules`, `.medusa`, `tsbuildinfo`.
+
+## Стиль кода и коммитов
+- Совпадать со стилем окружающего кода (отступы, именование, идиомы).
+- Комментарии и сообщения коммитов — на русском, кратко; тело коммита — по пунктам.
+- Запуск/настройка локально: `./scripts/dev-setup.sh`, затем `npm run dev`.
